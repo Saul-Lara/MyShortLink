@@ -1,3 +1,6 @@
+using api.Models;
+using api.Utils;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -22,6 +25,21 @@ app.MapGet("/", () =>
     };
 
     return response;
+});
+
+// API Prefix Group
+var apiGroup = app.MapGroup("/api");
+
+apiGroup.MapPost("/urls", (Url url) =>
+{
+    url.Id = 2026;
+    string shortCode = Base62.Encode(url.Id);
+
+    Console.WriteLine("Base62 Encoding");
+    Console.WriteLine($"URL Id: {url.Id} - Encoded: {shortCode}");
+    app.Logger.LogInformation($"[{DateTime.UtcNow}] Created short code \"{shortCode}\" for target URL \"{url.OriginalUrl}\" (Status: 201 Created)");
+
+    return Results.StatusCode(201);
 });
 
 app.Run();
