@@ -1,5 +1,6 @@
 using api.Models;
 using api.Utils;
+using SnowflakeGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,12 +33,11 @@ var apiGroup = app.MapGroup("/api");
 
 apiGroup.MapPost("/urls", (Url url) =>
 {
-    url.Id = 2026;
-    string shortCode = Base62.Encode(url.Id);
+    Snowflake snowflake = new Snowflake();
+    url.Id = (ulong)snowflake.NextID();
+    url.ShortCode = Base62.Encode(url.Id);
 
-    Console.WriteLine("Base62 Encoding");
-    Console.WriteLine($"URL Id: {url.Id} - Encoded: {shortCode}");
-    app.Logger.LogInformation($"[{DateTime.UtcNow}] Created short code \"{shortCode}\" for target URL \"{url.OriginalUrl}\" (Status: 201 Created)");
+    app.Logger.LogInformation($"[{DateTime.UtcNow}] Created short code \"{url.ShortCode}\" for target URL \"{url.OriginalUrl}\" (Status: 201 Created)");
 
     return Results.StatusCode(201);
 });
