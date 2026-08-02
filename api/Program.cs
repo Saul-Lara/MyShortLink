@@ -18,6 +18,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// in-memory URL store
+var urlDatabase = new Dictionary<string, string>();
+
 app.MapGet("/", () =>
 {
     var response = new
@@ -38,6 +41,8 @@ apiGroup.MapPost("/urls", (Url url) =>
     url.ShortCode = Base62.Encode(url.Id);
 
     app.Logger.LogInformation($"[{DateTime.UtcNow}] Created short code \"{url.ShortCode}\" for target URL \"{url.OriginalUrl}\" (Status: 201 Created)");
+
+    urlDatabase.Add(url.ShortCode, url.OriginalUrl);
 
     return Results.StatusCode(201);
 });
