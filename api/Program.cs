@@ -1,12 +1,13 @@
+using api.Interfaces;
+using api.Services;
 using api.Models;
-using api.Utils;
-using SnowflakeGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<IUrlService, UrlService>();
 
 var app = builder.Build();
 
@@ -17,9 +18,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// in-memory URL store
-var urlDatabase = new Dictionary<string, string>();
 
 app.MapGet("/", () =>
 {
@@ -34,17 +32,10 @@ app.MapGet("/", () =>
 // API Prefix Group
 var apiGroup = app.MapGroup("/api");
 
-apiGroup.MapPost("/urls", (Url url) =>
+apiGroup.MapPost("/urls", async (IUrlService service, Url url) =>
 {
-    Snowflake snowflake = new Snowflake();
-    url.Id = (ulong)snowflake.NextID();
-    url.ShortCode = Base62.Encode(url.Id);
-
-    app.Logger.LogInformation($"[{DateTime.UtcNow}] Created short code \"{url.ShortCode}\" for target URL \"{url.OriginalUrl}\" (Status: 201 Created)");
-
-    urlDatabase.Add(url.ShortCode, url.OriginalUrl);
-
-    return Results.StatusCode(201);
+    Url shortenedUrl  = await service.CreateShortenedUrl(url);
+    return Results.Json(new { shortCode = shortenedUrl .ShortCode}, statusCode: 201);
 });
 
 app.Run();
