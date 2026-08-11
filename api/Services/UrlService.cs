@@ -31,5 +31,11 @@ namespace api.Services
             
             return Task.FromResult(urlData);
         }
+
+        public Task<string?> GetOriginalUrl(string shortCode)
+        {
+            _urlDatabase.TryGetValue(shortCode, out string? originalURL);
+            return Task.FromResult(originalURL);
+        }
     }
 }
