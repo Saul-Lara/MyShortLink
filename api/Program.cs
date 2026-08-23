@@ -29,6 +29,18 @@ app.MapGet("/", () =>
     return response;
 });
 
+app.MapGet("/{shortcode}", async (string shortcode, IUrlService service) =>
+{
+    var originalUrl = await service.GetOriginalUrl(shortcode);
+
+    if (originalUrl == null)
+    {
+        return Results.NotFound(); // Returns 404 Status
+    }
+
+    return Results.Redirect(originalUrl, true);
+});
+
 // API Prefix Group
 var apiGroup = app.MapGroup("/api");
 
